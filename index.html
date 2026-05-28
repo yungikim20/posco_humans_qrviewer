@@ -23,15 +23,31 @@ pre{
 <pre id="content">불러오는 중...</pre>
 
 <script>
-const encoded = location.hash.slice(1);
+(function () {
+  var el = document.getElementById("content");
+  var raw = (location.hash || "").slice(1);
+  if (!raw) {
+    el.textContent = "데이터 없음";
+    return;
+  }
+  try {
+    var b64 = decodeURIComponent(raw)
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+    while (b64.length % 4) b64 += "=";
 
-try{
-    document.getElementById('content').textContent =
-        decodeURIComponent(escape(atob(encoded)));
-}catch(e){
-    document.getElementById('content').textContent =
-        '데이터 오류';
-}
+    var bin = atob(b64);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+
+    var text = new TextDecoder("utf-8").decode(bytes);
+    text = text.replace(/<br\s*\/?>/gi, "\n");
+
+    el.textContent = text;
+  } catch (e) {
+    el.textContent = "데이터 오류";
+  }
+})();
 </script>
 
 </body>
